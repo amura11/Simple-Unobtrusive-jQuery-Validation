@@ -1,11 +1,11 @@
 # jQuery.unobtrusive-validation
-jQuery.unobtrusive-validation is a plguin to allow any validation plugin to be used with ASP.NET's unobtrsuive validaiton attributes. The plguin parses these attributes into a generic object structure that is then passed to an adaptor that creates a plugin specific configuration.
+jQuery.unobtrusive-validation is a plug-in to allow any validation plug-in to be used with ASP.NET's unobtrusive validation attributes using a modular adaptor system. Each adaptor is a function that takes the generic configuration produced by the core jQuery.unobtrusive-validation code and turns it into options passed into a given validation plugin.
 
-# Current Plugin Adaptors
+# Current Plug-in Adaptors
 * [jQuery Validate (being tested)](http://jqueryvalidation.org/)
-* [Semantic UI (partially complete)](semantic-ui.com/behaviors/form.html)
+* [Semantic UI (partially complete)](http://semantic-ui.com/behaviors/form.html)
 
 # Usage
 1. Include the *jQuery.unobtrusive-validation.js* file
 2. Include one or all of the validation adaptor files
-3. Set the adaptor in code `UnobtrusiveValidation.usePlugin('adaptorName');`
+3. Set the adaptor in code `UnobtrusiveValidation.setAdaptor('adaptorName');`

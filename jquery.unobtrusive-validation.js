@@ -3,15 +3,12 @@
         UnobtrusiveValidation.setup();
     });
 
-    var _pluginInitializers = {};
-    var _plugin = "";
-    var _ruleAttributeRegex = new RegExp(/^(data-val-)([\-a-zA-Z0-9]+)$/);
-    UnobtrusiveValidation.usePlugin = function (pluginName) {
-        _plugin = pluginName;
+    UnobtrusiveValidation.setAdaptor = function (adaptorName) {
+        _selectedPluginAdaptor = _pluginAdaptors[adaptorName] || $.noop;
     }
 
-    UnobtrusiveValidation.addPlugin = function (pluginName, initializeCallback) {
-        _pluginInitializers[pluginName] = initializeCallback;
+    UnobtrusiveValidation.addAdaptor = function (adaptorName, adaptorFunction) {
+        _pluginAdaptors[adaptorName] = adaptorFunction;
     }
 
     UnobtrusiveValidation.setup = function (container) {
@@ -19,12 +16,12 @@
 
         //If the container is a form run only on that form, else run on all child forms
         if (container.is('form')) {
-            _pluginInitializers[_plugin](container, parseForm(container));
+            _selectedPluginAdaptor(container, parseForm(container));
         }
         else {
             $('form', container).each(function () {
                 var form = $(this);
-                _pluginInitializers[_plugin](form, parseForm(form));
+                _selectedPluginAdaptor(form, parseForm(form));
             });
         }
     }
@@ -134,4 +131,8 @@
 
         return ruleParameter;
     }
+
+    var _pluginAdaptors = {};
+    var _selectedPluginAdaptor = $.noop;
+    var _ruleAttributeRegex = new RegExp(/^(data-val-)([\-a-zA-Z0-9]+)$/);
 }(window.UnobtrusiveValidation = window.UnobtrusiveValidation || {}, jQuery));

@@ -1,9 +1,9 @@
 (function ($, undefined) {
     /*
-     * An initializer for Semantic UIs validation plug-in (http://semantic-ui.com/behaviors/form.html)
-     * Converts the generic configuration into one that can be used by the validation plug-in
+     * An adaptor for Semantic UIs validation plug-in (http://semantic-ui.com/behaviors/form.html)
+     * Adapts the generic configuration into one that can be used by the validation plug-in
      */
-    UnobtrusiveValidation.addPlugin('Semantic-UI', function (form, genericConfiguration) {
+    UnobtrusiveValidation.addAdaptor('Semantic-UI', function (form, genericConfiguration) {
 
         var pluginConfiguration = {
             fields: {
@@ -57,15 +57,11 @@
         } else if (mapper && typeof (mapper) === "function") {
             type = _pluginRuleMappers[name](configuration.parameters);
         } else {
-            type = _pluginNameMappers[name] || name;
+            type = name;
         }
 
         return type;
     }
-
-    var _pluginNameMappers = {
-        required: 'empty'
-    };
 
     /*
      * A map of rule names to functions or strings
@@ -73,6 +69,9 @@
      * If a rule maps to a string then that rule will call that mapper to perform it's rule mapping
      */
     var _pluginRuleMappers = {
+        required: function(){
+            return empty;
+        }
         range: function (parameters) {
             return "integer[" + parameters.min + ".." + parameters.max + "]";
         },

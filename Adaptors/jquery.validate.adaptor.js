@@ -3,14 +3,14 @@
      * An initializer for jQueryValidation (http://jqueryvalidation.org/)
      * Converts the generic configuration into one that can be used by the validation plugin
      */
-    UnobtrusiveValidation.addPlugin('jQueryValidation', function (form, genericConfiguration) {
+    UnobtrusiveValidation.addAdaptor('jQueryValidation', function (form, genericConfiguration) {
         //Remove any old validaiton
         if ($.validator != null) {
             form.removeData("validator")
                 .removeData("unobtrusiveValidation");
         }
 
-        var options = {
+        var pluginConfiguration = {
             rules: {},
             messages: {}
         };
@@ -20,54 +20,51 @@
             var fieldConfiguration = genericConfiguration[fieldName];
 
             //Add an entry for the field in the rules and messages
-            options.rules[fieldName] = {};
-            options.messages[fieldName] = {};
+            pluginConfiguration.rules[fieldName] = {};
+            pluginConfiguration.messages[fieldName] = {};
 
             for (var ruleName in fieldConfiguration) {
                 var ruleConfiguration = fieldConfiguration[ruleName];
 
                 //Get the framework name for this rule
-                var frameworkRuleName = getFrameworkRuleName(ruleName);
+                var pluginRuleName = getPluginRuleName(ruleName);
 
                 //Set the parameters to the mapped parameters
-                options.rules[fieldName][frameworkRuleName] = getFrameworkRuleParameters(ruleName, ruleConfiguration.parameters);
+                pluginConfiguration.rules[fieldName][pluginRuleName] = getPluginRuleParameters(ruleName, ruleConfiguration.parameters);
 
                 //If there is a message specified add it to the configuration
                 if (ruleConfiguration.message) {
-                    options.messages[fieldName][frameworkRuleName] = ruleConfiguration.message;
+                    pluginConfiguration.messages[fieldName][pluginRuleName] = ruleConfiguration.message;
                 }
             }
         }
 
-        form.validate(options);
+        form.validate(pluginConfiguration);
     });
 
     /*
      * If specified, maps the name from the attribute to the name in the framework
      * If not specified the original name is returned
      */
-    function getFrameworkRuleName(ruleName) {
+    function getPluginRuleName(ruleName) {
         return _ruleNameMappers[ruleName] || ruleName;
     }
 
     /*
-     * Maps the parameters for the given rule into parameters the framework can use
-     * If no mapper is specified the default is used
-     * The key is the rule name specified in the attributes not the framework rule name
+     * Maps the parameters for the given rule into parameters the plugin can use
+     * If there is no parameter maper the defualt is used
+     * If the paramter mapper is a string it uses that function (can be the name of another mapper or a regular function)
+     * If the paramter mapper is a function that function is called
      */
-    function getFrameworkRuleParameters(ruleName, ruleParameters) {
-        var mappedParameters;
-        var mapper = _ruleParametersMappers[ruleName];
+    function getPluginRuleParameters(ruleName, ruleParameters) {
+        var mapper = _ruleParametersMappers[ruleName] || _ruleParametersMappers['__default'];
 
-        if (mapper && typeof (mapper) === "string") {
-            mappedParameters = _ruleParametersMappers[mapper](ruleParameters);
-        } else if (mapper && typeof (mapper) === "function") {
-            mappedParameters = _ruleParametersMappers[ruleName](ruleParameters);
-        } else {
-            mappedParameters = _ruleParametersMappers['__default'](ruleParameters);
+        //If the mapper is a string find the function it's referencing or us default
+        if (typeof (mapper) === "string") {
+            mapper = _ruleParametersMappers[mapper] || _ruleParametersMappers['__default'];
         }
 
-        return mappedParameters;
+        return mapper(ruleParameters);
     }
 
     function defaultParameterMapper(parameters) {
