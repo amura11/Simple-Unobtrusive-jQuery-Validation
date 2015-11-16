@@ -1,4 +1,6 @@
-jQuery.unobtrusive-validation is a library that parses validation HTML data attributes created by the ASP.NET MVC framework into a standard configuration object that can then be adapted to be used with any client side validation plugin. For more details about the plugin and validation see the [Wiki](https://github.com/amura11/jQuery.unobtrusive-validation/wiki)
+jQuery.unobtrusive-validation is a library that parses validation HTML data attributes created by the ASP.NET MVC framework into a standard configuration object that can then be adapted to be used with any client side validation plugin. 
+
+For more details see the [Wiki](https://github.com/amura11/jQuery.unobtrusive-validation/wiki)
 
 # Current Client Side Validation Plugin Adaptors
 * [jQuery Validate (being tested)](http://jqueryvalidation.org/)
