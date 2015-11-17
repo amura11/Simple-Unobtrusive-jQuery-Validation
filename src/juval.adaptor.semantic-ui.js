@@ -1,13 +1,12 @@
-(function ($, undefined) {
+(function($){
     /*
      * An adaptor for Semantic UIs validation plug-in (http://semantic-ui.com/behaviors/form.html)
      * Adapts the generic configuration into one that can be used by the validation plug-in
      */
-    UnobtrusiveValidation.addAdaptor('Semantic-UI', function (form, genericConfiguration) {
+    UnobtrusiveValidation.addAdaptor('Semantic-UI', function(form, genericConfiguration) {
 
         var pluginConfiguration = {
-            fields: {
-            }
+            fields: {}
         };
 
         //Loop through each field
@@ -52,9 +51,9 @@
         var mapper = _pluginRuleMappers[name];
 
         //If the mapper is a function call it, if it's a string find that mapper, if it's not defined map the name without parameters
-        if (mapper && typeof (mapper) === "string") {
+        if (mapper && typeof(mapper) === "string") {
             type = _pluginRuleMappers[mapper](configuration.parameters);
-        } else if (mapper && typeof (mapper) === "function") {
+        } else if (mapper && typeof(mapper) === "function") {
             type = _pluginRuleMappers[name](configuration.parameters);
         } else {
             type = name;
@@ -69,23 +68,23 @@
      * If a rule maps to a string then that rule will call that mapper to perform it's rule mapping
      */
     var _pluginRuleMappers = {
-        required: function(){
+        required: function() {
             return empty;
-        }
-        range: function (parameters) {
+        },
+        range: function(parameters) {
             return "integer[" + parameters.min + ".." + parameters.max + "]";
         },
-        length: function (parameters) {
+        length: function(parameters) {
             return "exactLength[" + parameters.length + "]";
         },
-        minlength: function (parameters) {
+        minlength: function(parameters) {
             return "minLength[" + parameters.min + "]";
         },
-        maxlength: function (parameters) {
+        maxlength: function(parameters) {
             return "maxLength[" + parameters.max + "]";
         },
-        regex: function (parameters) {
+        regex: function(parameters) {
             return "regExp[/" + parameters.pattern + "/]";
         }
     };
-})(jQuery);
+}(jQuery));

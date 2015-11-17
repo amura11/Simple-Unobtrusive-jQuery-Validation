@@ -1,0 +1,40 @@
+{
+  "name": "jquery.unobtrusive-validation",
+  "version": "0.1.1",
+  "description": "A plugin to connect validation plugins with ASP.NET's unobtrusive validation attributes ",
+  "main": "gulpfile.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "dependencies": {
+    "gulp": "^3.9.0"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-concat": "^2.6.0",
+    "gulp-header": "^1.7.1",
+    "gulp-jshint": "^1.12.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^1.5.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amura11/jQuery.unobtrusive-validation.git"
+  },
+  "keywords": [
+    "jquery",
+    "unobtrusive",
+    "validation",
+    "MVC",
+    "ASP.NET"
+  ],
+  "author": "Amura",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/amura11/jQuery.unobtrusive-validation/issues"
+  },
+  "homepage": "https://github.com/amura11/jQuery.unobtrusive-validation#readme"
+}

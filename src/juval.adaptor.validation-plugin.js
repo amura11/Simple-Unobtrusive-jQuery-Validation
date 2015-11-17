@@ -1,11 +1,11 @@
-(function ($, undefined) {
+(function($){
     /*
      * An initializer for jQueryValidation (http://jqueryvalidation.org/)
      * Converts the generic configuration into one that can be used by the validation plugin
      */
-    UnobtrusiveValidation.addAdaptor('jQueryValidation', function (form, genericConfiguration) {
+    UnobtrusiveValidation.addAdaptor('jQueryValidationPlugin', function (form, genericConfiguration) {
         //Remove any old validaiton
-        if ($.validator != null) {
+        if ($.validator !== null) {
             form.removeData("validator")
                 .removeData("unobtrusiveValidation");
         }
@@ -57,11 +57,11 @@
      * If the paramter mapper is a function that function is called
      */
     function getPluginRuleParameters(ruleName, ruleParameters) {
-        var mapper = _ruleParametersMappers[ruleName] || _ruleParametersMappers['__default'];
+        var mapper = _ruleParametersMappers[ruleName] || _ruleParametersMappers.__default;
 
         //If the mapper is a string find the function it's referencing or us default
         if (typeof (mapper) === "string") {
-            mapper = _ruleParametersMappers[mapper] || _ruleParametersMappers['__default'];
+            mapper = _ruleParametersMappers[mapper] || _ruleParametersMappers.__default;
         }
 
         return mapper(ruleParameters);
@@ -120,4 +120,4 @@
             return new RegExp(parameters.pattern);
         }
     };
-})(jQuery);
+}(jQuery));

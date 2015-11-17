@@ -1,15 +1,17 @@
-(function (UnobtrusiveValidation, $, undefined) {
+(function(UnobtrusiveValidation, $, undefined) {
+    "use strict";
+
     $(function () {
         UnobtrusiveValidation.setup();
     });
 
     UnobtrusiveValidation.setAdaptor = function (adaptorName) {
         _selectedPluginAdaptor = _pluginAdaptors[adaptorName] || $.noop;
-    }
+    };
 
     UnobtrusiveValidation.addAdaptor = function (adaptorName, adaptorFunction) {
         _pluginAdaptors[adaptorName] = adaptorFunction;
-    }
+    };
 
     UnobtrusiveValidation.setup = function (container) {
         container = $(container || 'body');
@@ -24,7 +26,7 @@
                 _selectedPluginAdaptor(form, parseForm(form));
             });
         }
-    }
+    };
 
     /*
      * Parses the given form and returns a generic configuration for that form
@@ -43,16 +45,16 @@
     }
 
     /*
-	* Parses the given element and returns a generic configuration for that element
-	* The generic configuration looks as follows
-	* {
-	*   rule_name_1: {
-	*       message: undefined|string,
-	*       parameters: undefined|object
-	*   },
-	*   ...
-	* }
-	*/
+    * Parses the given element and returns a generic configuration for that element
+    * The generic configuration looks as follows
+    * {
+    *   rule_name_1: {
+    *       message: undefined|string,
+    *       parameters: undefined|object
+    *   },
+    *   ...
+    * }
+    */
     function parseElement(element) {
         var elementConfig = {};
 
@@ -95,11 +97,11 @@
     }
 
     /*
-	* Utility for getting the rule name from the rule data
-	* Eg. If the rule attribute is 'data-val-test-param-1'
-	* Rule data would be: 'test-param-1'
-	* Rule name would be: 'test'
-	*/
+    * Utility for getting the rule name from the rule data
+    * Eg. If the rule attribute is 'data-val-test-param-1'
+    * Rule data would be: 'test-param-1'
+    * Rule name would be: 'test'
+    */
     function getRuleName(ruleAttribute) {
         var ruleName;
 
@@ -115,13 +117,13 @@
     }
 
     /*
-	* Utility for getting the rule paramter from the rule data
-	* Eg. If the rule attribute is 'data-val-test-param-1'
-	* Rule data would be: 'test-param-1'
-	* Rule paramter would be: 'param-1'
-	*/
+    * Utility for getting the rule paramter from the rule data
+    * Eg. If the rule attribute is 'data-val-test-param-1'
+    * Rule data would be: 'test-param-1'
+    * Rule paramter would be: 'param-1'
+    */
     function getRuleParameter(ruleAttribute) {
-        var ruleParameter = undefined;
+        var ruleParameter;
 
         var index = ruleAttribute.indexOf('-');
 
@@ -135,4 +137,5 @@
     var _pluginAdaptors = {};
     var _selectedPluginAdaptor = $.noop;
     var _ruleAttributeRegex = new RegExp(/^(data-val-)([\-a-zA-Z0-9]+)$/);
+
 }(window.UnobtrusiveValidation = window.UnobtrusiveValidation || {}, jQuery));
