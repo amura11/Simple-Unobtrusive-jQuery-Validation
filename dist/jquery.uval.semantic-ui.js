@@ -1,35 +1,41 @@
 /**
- * query.unobtrusive-validation - A plugin to connect validation plugins with ASP.NET's unobtrusive validation attributes 
- * @version v0.0.1
+ * jquery.unobtrusive-validation - A plugin to connect validation plugins with ASP.NET's unobtrusive validation attributes 
+ * @version v0.1.1
  * @link https://github.com/amura11/jQuery.unobtrusive-validation#readme
  * @license MIT
  */
 (function(UnobtrusiveValidation, $, undefined) {
-    "use strict";
-
-    $(function () {
+    $(function() {
         UnobtrusiveValidation.setup();
     });
 
-    UnobtrusiveValidation.setAdaptor = function (adaptorName) {
-        _selectedPluginAdaptor = _pluginAdaptors[adaptorName] || $.noop;
+    UnobtrusiveValidation.setAdaptor = function(adaptorName) {
+        _selectedAdaptor = adaptorName;
     };
 
-    UnobtrusiveValidation.addAdaptor = function (adaptorName, adaptorFunction) {
-        _pluginAdaptors[adaptorName] = adaptorFunction;
+    /**
+     * Returns a namespace for the given adaptor
+     * If the namespace doens't exist it gets created.
+     * @param  {String} adaptorName The adaptor name to create a namespace for
+     * @return {Object}             A namespace within UnobtrusiveValidation.Adaptors for the given adaptor name
+     */
+    UnobtrusiveValidation.getAdaptorNamespace = function(adaptorName) {
+        UnobtrusiveValidation.Adaptors[adaptorName] = UnobtrusiveValidation.Adaptors[adaptorName] || {};
+
+        return UnobtrusiveValidation.Adaptors[adaptorName];
     };
 
-    UnobtrusiveValidation.setup = function (container) {
+    UnobtrusiveValidation.setup = function(container) {
+        var adaptor = UnobtrusiveValidation.Adaptors[_selectedAdaptor] || _emptyAdaptor;
         container = $(container || 'body');
 
         //If the container is a form run only on that form, else run on all child forms
         if (container.is('form')) {
-            _selectedPluginAdaptor(container, parseForm(container));
-        }
-        else {
-            $('form', container).each(function () {
+            adaptor.initializePlugin(container, parseForm(container));
+        } else {
+            $('form', container).each(function() {
                 var form = $(this);
-                _selectedPluginAdaptor(form, parseForm(form));
+                adaptor.initializePlugin(form, parseForm(form));
             });
         }
     };
@@ -42,7 +48,7 @@
         var formConfig = {};
 
         //Build the list of validators for each field
-        $("[data-val='true']", form).each(function () {
+        $("[data-val='true']", form).each(function() {
             var element = $(this);
             formConfig[element.attr('name')] = parseElement(element);
         });
@@ -51,20 +57,20 @@
     }
 
     /*
-    * Parses the given element and returns a generic configuration for that element
-    * The generic configuration looks as follows
-    * {
-    *   rule_name_1: {
-    *       message: undefined|string,
-    *       parameters: undefined|object
-    *   },
-    *   ...
-    * }
-    */
+     * Parses the given element and returns a generic configuration for that element
+     * The generic configuration looks as follows
+     * {
+     *   rule_name_1: {
+     *       message: undefined|string,
+     *       parameters: undefined|object
+     *   },
+     *   ...
+     * }
+     */
     function parseElement(element) {
         var elementConfig = {};
 
-        $.each(element[0].attributes, function () {
+        $.each(element[0].attributes, function() {
             var matchGroups;
 
             //If the attribute is specified and it's a rule attribute
@@ -103,11 +109,11 @@
     }
 
     /*
-    * Utility for getting the rule name from the rule data
-    * Eg. If the rule attribute is 'data-val-test-param-1'
-    * Rule data would be: 'test-param-1'
-    * Rule name would be: 'test'
-    */
+     * Utility for getting the rule name from the rule data
+     * Eg. If the rule attribute is 'data-val-test-param-1'
+     * Rule data would be: 'test-param-1'
+     * Rule name would be: 'test'
+     */
     function getRuleName(ruleAttribute) {
         var ruleName;
 
@@ -123,11 +129,11 @@
     }
 
     /*
-    * Utility for getting the rule paramter from the rule data
-    * Eg. If the rule attribute is 'data-val-test-param-1'
-    * Rule data would be: 'test-param-1'
-    * Rule paramter would be: 'param-1'
-    */
+     * Utility for getting the rule paramter from the rule data
+     * Eg. If the rule attribute is 'data-val-test-param-1'
+     * Rule data would be: 'test-param-1'
+     * Rule paramter would be: 'param-1'
+     */
     function getRuleParameter(ruleAttribute) {
         var ruleParameter;
 
@@ -140,18 +146,29 @@
         return ruleParameter;
     }
 
-    var _pluginAdaptors = {};
-    var _selectedPluginAdaptor = $.noop;
+    var _emptyAdaptor = {
+        initializePlugin: function() {}
+    };
+    var _selectedAdaptor;
     var _ruleAttributeRegex = new RegExp(/^(data-val-)([\-a-zA-Z0-9]+)$/);
-
+    //Ensure the adaptors namespace is setup
+    UnobtrusiveValidation.Adaptors = UnobtrusiveValidation.Adaptors || {};
 }(window.UnobtrusiveValidation = window.UnobtrusiveValidation || {}, jQuery));
 
-(function($){
+//Ensure the namespace is setup correctly
+if (!UnobtrusiveValidation.Adaptors.SemanticUi) {
+    UnobtrusiveValidation.Adaptors.SemanticUi = {};
+}
+
+(function(SemanticUi, $, undefined) {
+    function init() {
+    }
+
     /*
      * An adaptor for Semantic UIs validation plug-in (http://semantic-ui.com/behaviors/form.html)
      * Adapts the generic configuration into one that can be used by the validation plug-in
      */
-    UnobtrusiveValidation.addAdaptor('Semantic-UI', function(form, genericConfiguration) {
+    SemanticUi.initializePlugin = function(form, genericConfiguration) {
 
         var pluginConfiguration = {
             fields: {}
@@ -165,14 +182,11 @@
             for (var ruleName in fieldConfiguration) {
                 var ruleConfiguration = fieldConfiguration[ruleName];
                 var rule = {};
+                var mapper = _mappers[ruleName] || parameterlessMapper.bind(this, ruleName);
 
-                //Map the rule configuration to the framework type
-                rule.type = getPluginRuleType(ruleName, ruleConfiguration);
-
-                //If there is a message specified add it to the configuration
-                if (ruleConfiguration.message) {
-                    rule.prompt = ruleConfiguration.message;
-                }
+                //Map the rule configuration to the plugin type and prompty
+                rule.type = mapper(ruleConfiguration.parameters);
+                rule.prompt = ruleConfiguration.message;
 
                 //Add the rule to the field's list of rules
                 rules.push(rule);
@@ -187,59 +201,56 @@
 
         //Call Semantic UI's validation plug-in with the configuration
         form.form(pluginConfiguration);
-    });
+    };
 
-    /*
-     * Gets the rule type for the Semantic UI validation plug-in
-     */
-    function getPluginRuleType(name, configuration) {
-        var type;
-
-        //Get the mapper for this rule type
-        var mapper = _pluginRuleMappers[name];
-
-        //If the mapper is a function call it, if it's a string find that mapper, if it's not defined map the name without parameters
-        if (mapper && typeof(mapper) === "string") {
-            type = _pluginRuleMappers[mapper](configuration.parameters);
-        } else if (mapper && typeof(mapper) === "function") {
-            type = _pluginRuleMappers[name](configuration.parameters);
-        } else {
-            type = name;
-        }
-
-        return type;
+    function parameterlessMapper(name) {
+        return name;
     }
 
-    /*
-     * A map of rule names to functions or strings
-     * If a rule name maps to a function, the parameters from the attributes will be pass to that function to be parsed
-     * If a rule maps to a string then that rule will call that mapper to perform it's rule mapping
+    function singleParameterMapper(name, parameters) {
+        if (Object.keys(parameters).length !== 1) {
+            throw "Cannot pull a single value from a parameter list that has multiple parameters";
+        }
+
+        return name + '[' + parameters[Object.keys(configuration.parameters)[0]] + ']';
+    }
+
+    /**
+     * @type {Object}
      */
-    var _pluginRuleMappers = {
-        required: function() {
-            return empty;
+    var _mappers = {
+        //Default mapper calls with the name added
+        creditcard: parameterlessMapper.bind(this, 'creditCard'),
+        email: parameterlessMapper.bind(this, 'email'),
+        required: parameterlessMapper.bind(this, 'empty'),
+        url: parameterlessMapper.bind(this, 'url'),
+        //Single value mappers with the name added
+        equalto: singleParameterMapper.bind(this, 'match'),
+        length: singleParameterMapper.bind(this, 'exactLength'),
+        maxlength: singleParameterMapper.bind(this, 'maxLength'),
+        minlength: singleParameterMapper.bind(this, 'minLength'),
+        //Complex mappers
+        regex: function(parameters) {
+            return 'regExp[/' + parameters.pattern + '/]';
+        },
+        phone: function(parameters) {
+            return 'regExp[/^(\+0?1\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$/]';
+        },
+        extension: function(parameters) {
+            //TODO Need to create a rule for this
         },
         range: function(parameters) {
-            return "integer[" + parameters.min + ".." + parameters.max + "]";
-        },
-        length: function(parameters) {
-            return "exactLength[" + parameters.length + "]";
-        },
-        minlength: function(parameters) {
-            return "minLength[" + parameters.min + "]";
-        },
-        maxlength: function(parameters) {
-            return "maxLength[" + parameters.max + "]";
-        },
-        regex: function(parameters) {
-            return "regExp[/" + parameters.pattern + "/]";
+            return 'integer[' + parameters.min + '..' + parameters.max + ']';
         }
     };
-}(jQuery));
+
+    //Setup the adaptor
+    init();
+}(UnobtrusiveValidation.getAdaptorNamespace('SemanticUi'), jQuery));
 
 /*
- * Initializes the juval plugin to use the jQuery Validaiton Plugin
-*/
-if(UnobtrusiveValidation){
-    UnobtrusiveValidation.setAdaptor('Semantic-UI');
+ * Initializes the juval plugin to use the SemanticUi Plugin
+ */
+if (UnobtrusiveValidation) {
+    UnobtrusiveValidation.setAdaptor('SemanticUi');
 }

@@ -1,6 +1,6 @@
 /*
- * Initializes the juval plugin to use the jQuery Validaiton Plugin
-*/
-if(UnobtrusiveValidation){
-    UnobtrusiveValidation.setAdaptor('Semantic-UI');
+ * Initializes the juval plugin to use the SemanticUi Plugin
+ */
+if (UnobtrusiveValidation) {
+    UnobtrusiveValidation.setAdaptor('SemanticUi');
 }

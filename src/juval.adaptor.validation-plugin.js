@@ -1,9 +1,27 @@
-(function($){
-    /*
-     * An initializer for jQueryValidation (http://jqueryvalidation.org/)
-     * Converts the generic configuration into one that can be used by the validation plugin
+(function(jQueryValidationPlugin, $, undefined) {
+    /**
+     * Sets up the adaptor for the jQuery Validation Plugin
+     * @return {[type]} [description]
      */
-    UnobtrusiveValidation.addAdaptor('jQueryValidationPlugin', function (form, genericConfiguration) {
+    function init() {
+        //Check that the plugin has been added
+        if (!$.validator) {
+            throw "No validator found, please ensure the jQuery Validation Plugin has been added";
+        }
+
+        //The pattern method is in a seperate file called aditional-methods.js, log a message if it's missing
+        if (!$.validator.methods.pattern) {
+            console.log("The additonal methods file has not been included, not all validation methods will work");
+        }
+    }
+
+    /**
+     * Parses the standardConfiguration into a plugin specific configuration
+     * Once the config has been parsed the plugin is run on the given form
+     * @param  {jQuery Object} form                  The form to setup with the plguin
+     * @param  {Object} standardConfiguration The configuration from the core
+     */
+    jQueryValidationPlugin.initializePlugin = function(form, standardConfiguration) {
         //Remove any old validaiton
         if ($.validator !== null) {
             form.removeData("validator")
@@ -16,108 +34,122 @@
         };
 
         //Loop through each field
-        for (var fieldName in genericConfiguration) {
-            var fieldConfiguration = genericConfiguration[fieldName];
+        for (var fieldName in standardConfiguration) {
+            var fieldConfiguration = standardConfiguration[fieldName];
 
             //Add an entry for the field in the rules and messages
             pluginConfiguration.rules[fieldName] = {};
             pluginConfiguration.messages[fieldName] = {};
 
             for (var ruleName in fieldConfiguration) {
-                var ruleConfiguration = fieldConfiguration[ruleName];
+                //Get the mapper from the mapper list, if one isn't defined use the passthrough mapper
+                var mapper = _mappers[ruleName] || passthroughMapper.bind(this, ruleName);
 
-                //Get the framework name for this rule
-                var pluginRuleName = getPluginRuleName(ruleName);
-
-                //Set the parameters to the mapped parameters
-                pluginConfiguration.rules[fieldName][pluginRuleName] = getPluginRuleParameters(ruleName, ruleConfiguration.parameters);
-
-                //If there is a message specified add it to the configuration
-                if (ruleConfiguration.message) {
-                    pluginConfiguration.messages[fieldName][pluginRuleName] = ruleConfiguration.message;
-                }
+                //Call the mapper function
+                mapper(fieldConfiguration[ruleName], pluginConfiguration.rules[fieldName], pluginConfiguration.messages[fieldName]);
             }
         }
 
         form.validate(pluginConfiguration);
-    });
+    };
 
-    /*
-     * If specified, maps the name from the attribute to the name in the framework
-     * If not specified the original name is returned
+    /**
+     * Adds a new rule mapper to the adaptor
+     * @param {String} name            The name of the rule to be mapped
+     * @param {Function} mappingFunction The function to perform the mapping. If empty paramters are passed through
      */
-    function getPluginRuleName(ruleName) {
-        return _ruleNameMappers[ruleName] || ruleName;
-    }
+    jQueryValidationPlugin.addRuleMapper = function(name, mappingFunction) {
+        //If the mappingFunction is undefined, use the passthrough mapper
+        _mappers[name] = mappingFunction || passthroughMapper.bind(this, name);
+    };
 
-    /*
-     * Maps the parameters for the given rule into parameters the plugin can use
-     * If there is no parameter maper the defualt is used
-     * If the paramter mapper is a string it uses that function (can be the name of another mapper or a regular function)
-     * If the paramter mapper is a function that function is called
+    /**
+     * Adds a new rule to the validation plugin and adds a mapping for that rule
+     * @param  {String} name               The name of the rule to be mapped
+     * @param  {Function} validationFunction The function that acutally performs the validation
      */
-    function getPluginRuleParameters(ruleName, ruleParameters) {
-        var mapper = _ruleParametersMappers[ruleName] || _ruleParametersMappers.__default;
+    jQueryValidationPlugin.addRule = function(name, validationFunction) {
+        //Add the function call-back
+        $.validator.addMethod(name, validateFunction);
 
-        //If the mapper is a string find the function it's referencing or us default
-        if (typeof (mapper) === "string") {
-            mapper = _ruleParametersMappers[mapper] || _ruleParametersMappers.__default;
-        }
+        //Add a mapper for the new rule
+        _mappers[name] = passthroughMapper.bind(this, name);
+    };
 
-        return mapper(ruleParameters);
+    /**
+     * A utility mapper that maps the parameters 1-1 as the plugin parameters
+     * @param  {String} ruleName      The name of the rule to be mapped
+     * @param  {Object} configuration The Standard configuration returned from the core
+     * @param  {Object} rules         The current field's rules object to me modified
+     * @param  {Object} messages      The current field's messages object to me modified
+     */
+    function passthroughMapper(ruleName, configuration, rules, messages) {
+        rules[ruleName] = configuration.parameters;
+        messages[ruleName] = configuration.message;
     }
 
-    function defaultParameterMapper(parameters) {
-        //If the parameters is empty that means the framework is expecting true
-        return parameters || true;
+    /**
+     * A utility mapper that maps 'true' as the plugin parameter
+     * @param  {String} ruleName      The name of the rule to be mapped
+     * @param  {Object} configuration The Standard configuration returned from the core
+     * @param  {Object} rules         The current field's rules object to me modified
+     * @param  {Object} messages      The current field's messages object to me modified
+     */
+    function booleanMapper(ruleName, configuration, rules, messages) {
+        rules[ruleName] = true;
+        messages[ruleName] = configuration.message;
     }
 
-    function singleValueParameterMapper(parameters) {
-        if (Object.keys(parameters).length !== 1) {
+    /**
+     * A utility mapper that maps the first parameter as the plugin parameters
+     * @param  {String} ruleName      The name of the rule to be mapped
+     * @param  {Object} configuration The Standard configuration returned from the core
+     * @param  {Object} rules         The current field's rules object to me modified
+     * @param  {Object} messages      The current field's messages object to me modified
+     */
+    function singleValueMapper(ruleName, configuration, rules, messages) {
+        if (Object.keys(configuration.parameters).length !== 1) {
             throw "Cannot pull a single value from a parameter list that has multiple parameters";
         }
 
-        //Return the value of the first key (the only value)
-        return parameters[Object.keys(parameters)[0]];
+        rules[ruleName] = configuration.parameters[Object.keys(configuration.parameters)[0]];
+        messages[ruleName] = configuration.message;
     }
 
-    function minMaxParameterMapper(parameters) {
-        if (!parameters.min && !parameters.max) {
-            throw "Cannot pull a single value from a parameter list that has multiple parameters";
-        }
-
-        //Return the value of the first key (the only value)
-        return [parameters.min, parameters.length];
-    }
-
-    var _ruleNameMappers = {
-        regex: 'pattern'
-    };
-
-    /*
-     * A map of rule names to functions or strings
-     * If a rule name maps to a function, the parameters from the attributes will be pass to that function to be parsed
-     * If a rule maps to a string then that rule will call that mapper to perform it's rule mapping
+    /**
+     * The set of mappers that are available by default in ASP.NET MVC
+     * Each mapper takes the rule configuration, and a reference to the current fields rules and messages
+     * Note the use of 'bind' is to curry functions
+     * @type {Object}
      */
-    var _ruleParametersMappers = {
-        //Utility mappers
-        __default: defaultParameterMapper,
-        __singleValue: singleValueParameterMapper,
-        __minMax: minMaxParameterMapper,
-        //Custom mappers
-        length: '__singleValue',
-        minlength: '__singleValue',
-        maxlength: '__singleValue',
-        rangelength: '__minMax',
-        min: '__singleValue',
-        max: '__singleValue',
-        range: '__minMax',
-        equalTo: '__singleValue',
-        remote: '__singleValue',
-        accept: '__singleValue',
-        extension: '__singleValue',
-        regex: function (parameters) {
-            return new RegExp(parameters.pattern);
-        }
+    var _mappers = {
+        //Default mapper calls with the name added
+        creditcard: booleanMapper.bind(this, 'creditcard'),
+        email: booleanMapper.bind(this, 'email'),
+        phone: booleanMapper.bind(this, 'phoneUS'),
+        required: booleanMapper.bind(this, 'required'),
+        url: booleanMapper.bind(this, 'url'),
+        //Single value mappers with the name added
+        equalto: singleValueMapper.bind(this, 'equalTo'),
+        length: singleValueMapper.bind(this, 'maxlength'),
+        maxlength: singleValueMapper.bind(this, 'maxlength'),
+        minlength: singleValueMapper.bind(this, 'minlength'),
+        regex: singleValueMapper.bind(this, 'pattern'),
+        //Complex mappers
+        extension: function(configuration, rules, messages) {
+            //Convert the comma seperated string to a pipe separated
+            rules.accept = configuration.parameters.extension.replace(/\s*,\s*/g, '|');
+            messages.accept = configuration.message;
+        },
+        range: function(configuration, rules, messages) {
+            rules.min = configuration.parameters.min;
+            rules.max = configuration.parameters.max;
+
+            messages.min = configuration.message;
+            messages.max = configuration.message;
+        },
     };
-}(jQuery));
+
+    //Setup the adaptor
+    init();
+}(UnobtrusiveValidation.getAdaptorNamespace('jQueryValidationPlugin'), jQuery));

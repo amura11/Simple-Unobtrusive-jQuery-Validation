@@ -1,0 +1,38 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+    <title>jQuery Unobtrusive Validation Test</title>
+</head>
+
+<body>
+    <form>
+        <input name="test_input_1" data-val="true" data-val-required="Required message" />
+        <input name="test_input_2" data-val="true" data-val-creditcard="Creditcard message" />
+        <input name="test_input_3" data-val="true" data-val-email="Email message" />
+        <input name="test_input_4" data-val="true" data-val-equalto="Equalto message" data-val-equalto-other="test_input_1" />
+        <input name="test_input_5" data-val="true" data-val-extension="Extension message" data-val-extension-extension="foo,bar, baz" />
+        <input name="test_input_6" data-val="true" data-val-regex="Regex message" data-val-regex-patter="*.?" />
+    </form>
+    <script src="jquery-2.1.4.min.js"></script>
+    <script>
+        $.extend($.fn, {
+            validate: function(options){
+                console.log(options);
+            }
+        });
+        $.validator = {
+            methods: {
+                pattern: {}
+            }
+        };
+    </script>
+    <script src="../src/juval.core.js"></script>
+    <script src="../src/juval.adaptor.validation-plugin.js"></script>
+    <script src="../src/juval.setter.validation-plugin.js"></script>
+</body>
+
+</html>

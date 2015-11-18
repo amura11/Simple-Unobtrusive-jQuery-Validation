@@ -1,9 +1,12 @@
-(function($){
+(function(SemanticUi, $, undefined) {
+    function init() {
+    }
+
     /*
      * An adaptor for Semantic UIs validation plug-in (http://semantic-ui.com/behaviors/form.html)
      * Adapts the generic configuration into one that can be used by the validation plug-in
      */
-    UnobtrusiveValidation.addAdaptor('Semantic-UI', function(form, genericConfiguration) {
+    SemanticUi.initializePlugin = function(form, genericConfiguration) {
 
         var pluginConfiguration = {
             fields: {}
@@ -17,14 +20,11 @@
             for (var ruleName in fieldConfiguration) {
                 var ruleConfiguration = fieldConfiguration[ruleName];
                 var rule = {};
+                var mapper = _mappers[ruleName] || parameterlessMapper.bind(this, ruleName);
 
-                //Map the rule configuration to the framework type
-                rule.type = getPluginRuleType(ruleName, ruleConfiguration);
-
-                //If there is a message specified add it to the configuration
-                if (ruleConfiguration.message) {
-                    rule.prompt = ruleConfiguration.message;
-                }
+                //Map the rule configuration to the plugin type and prompty
+                rule.type = mapper(ruleConfiguration.parameters);
+                rule.prompt = ruleConfiguration.message;
 
                 //Add the rule to the field's list of rules
                 rules.push(rule);
@@ -39,52 +39,49 @@
 
         //Call Semantic UI's validation plug-in with the configuration
         form.form(pluginConfiguration);
-    });
+    };
 
-    /*
-     * Gets the rule type for the Semantic UI validation plug-in
-     */
-    function getPluginRuleType(name, configuration) {
-        var type;
-
-        //Get the mapper for this rule type
-        var mapper = _pluginRuleMappers[name];
-
-        //If the mapper is a function call it, if it's a string find that mapper, if it's not defined map the name without parameters
-        if (mapper && typeof(mapper) === "string") {
-            type = _pluginRuleMappers[mapper](configuration.parameters);
-        } else if (mapper && typeof(mapper) === "function") {
-            type = _pluginRuleMappers[name](configuration.parameters);
-        } else {
-            type = name;
-        }
-
-        return type;
+    function parameterlessMapper(name) {
+        return name;
     }
 
-    /*
-     * A map of rule names to functions or strings
-     * If a rule name maps to a function, the parameters from the attributes will be pass to that function to be parsed
-     * If a rule maps to a string then that rule will call that mapper to perform it's rule mapping
+    function singleParameterMapper(name, parameters) {
+        if (Object.keys(parameters).length !== 1) {
+            throw "Cannot pull a single value from a parameter list that has multiple parameters";
+        }
+
+        return name + '[' + parameters[Object.keys(configuration.parameters)[0]] + ']';
+    }
+
+    /**
+     * @type {Object}
      */
-    var _pluginRuleMappers = {
-        required: function() {
-            return empty;
+    var _mappers = {
+        //Default mapper calls with the name added
+        creditcard: parameterlessMapper.bind(this, 'creditCard'),
+        email: parameterlessMapper.bind(this, 'email'),
+        required: parameterlessMapper.bind(this, 'empty'),
+        url: parameterlessMapper.bind(this, 'url'),
+        //Single value mappers with the name added
+        equalto: singleParameterMapper.bind(this, 'match'),
+        length: singleParameterMapper.bind(this, 'exactLength'),
+        maxlength: singleParameterMapper.bind(this, 'maxLength'),
+        minlength: singleParameterMapper.bind(this, 'minLength'),
+        //Complex mappers
+        regex: function(parameters) {
+            return 'regExp[/' + parameters.pattern + '/]';
+        },
+        phone: function(parameters) {
+            return 'regExp[/^(\+0?1\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$/]';
+        },
+        extension: function(parameters) {
+            //TODO Need to create a rule for this
         },
         range: function(parameters) {
-            return "integer[" + parameters.min + ".." + parameters.max + "]";
-        },
-        length: function(parameters) {
-            return "exactLength[" + parameters.length + "]";
-        },
-        minlength: function(parameters) {
-            return "minLength[" + parameters.min + "]";
-        },
-        maxlength: function(parameters) {
-            return "maxLength[" + parameters.max + "]";
-        },
-        regex: function(parameters) {
-            return "regExp[/" + parameters.pattern + "/]";
+            return 'integer[' + parameters.min + '..' + parameters.max + ']';
         }
     };
-}(jQuery));
+
+    //Setup the adaptor
+    init();
+}(UnobtrusiveValidation.getAdaptorNamespace('SemanticUi'), jQuery));
