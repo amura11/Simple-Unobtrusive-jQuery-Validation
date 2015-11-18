@@ -1,6 +1,6 @@
 {
   "name": "jquery.unobtrusive-validation",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "A plugin to connect validation plugins with ASP.NET's unobtrusive validation attributes ",
   "main": "gulpfile.js",
   "directories": {

@@ -1,6 +1,5 @@
 (function(SemanticUi, $, undefined) {
-    function init() {
-    }
+    function init() {}
 
     /*
      * An adaptor for Semantic UIs validation plug-in (http://semantic-ui.com/behaviors/form.html)
@@ -40,6 +39,47 @@
         //Call Semantic UI's validation plug-in with the configuration
         form.form(pluginConfiguration);
     };
+
+    /**
+     * Adds a new rule mapper to the adaptor
+     * @param {String} name            The name of the rule to be mapped
+     * @param {Function} mappingFunction The function to perform the mapping. If empty paramters are passed through
+     */
+    SemanticUi.addRuleMapper = function(name, mappingFunction) {
+        //If the mappingFunction is undefined, use the passthrough mapper
+        _mappers[name] = mappingFunction || parameterlessMapper.bind(this, name);
+    };
+
+    /**
+     * Adds a new rule to the validation plugin and adds a mapping for that rule
+     * @param  {String} name               The name of the rule to be mapped
+     * @param  {Function} validationFunction The function that acutally performs the validation
+     */
+    SemanticUi.addRule = function(name, validationFunction, mappingFunction) {
+        //Add the function call-back
+        $.fn.form.settings.rules[name] = validateFunction;
+
+        //Add a mapper for the new rule
+        _mappers[name] = mappingFunction || defaultMapper.bind(this, name);
+    };
+
+    function defaultMapper(name, parameters) {
+        var toReturn;
+
+        if (parameters.length > 0) {
+            var parametersArray = [];
+
+            for (var key in parameters) {
+                parametersArray.push(parameters[key]);
+            }
+
+            toReturn = name + '[' + parametersArray.toString() + ']';
+        } else {
+            toReturn = name;
+        }
+
+        return toReturn;
+    }
 
     function parameterlessMapper(name) {
         return name;
