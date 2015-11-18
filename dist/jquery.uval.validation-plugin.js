@@ -1,6 +1,6 @@
 /**
  * jquery.unobtrusive-validation - A plugin to connect validation plugins with ASP.NET's unobtrusive validation attributes 
- * @version v0.1.1
+ * @version v0.2.0
  * @link https://github.com/amura11/jQuery.unobtrusive-validation#readme
  * @license MIT
  */

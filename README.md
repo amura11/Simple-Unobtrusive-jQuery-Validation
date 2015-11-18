@@ -3,15 +3,15 @@ jQuery.unobtrusive-validation, or shortened to JUVal, is a library that parses v
 For more details see the [Wiki](https://github.com/amura11/jQuery.unobtrusive-validation/wiki)
 
 # Current Client Side Validation Plugin Adaptors
-* [jQuery Validate (being tested)](http://jqueryvalidation.org/)
-* [Semantic UI (partially complete)](http://semantic-ui.com/behaviors/form.html)
+* [jQuery Validate](http://jqueryvalidation.org/)
+* [Semantic UI](http://semantic-ui.com/behaviors/form.html) Note: This is still a work in progress but mostly works
 
 # Usage
 ## Simple
 1. Download the version for your validation plugin (jquery.uval.<plugin-name>.js)
-2. Include it in your html file
+2. Include it
 
 ##Advanced
 1. Download jquery.uval.js
-2. Include it in your html file
+2. Include it
 3. Add `UnobtrusiveValidation.setAdaptor('<plugin-name>');` somewhere in your code (don't put it in an event handler)

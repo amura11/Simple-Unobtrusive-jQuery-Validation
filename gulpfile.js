@@ -2,7 +2,8 @@ var gulp = require('gulp'),
     uglify = require('gulp-uglify'),
     rename = require('gulp-rename'),
     concat = require('gulp-concat'),
-    header = require('gulp-header')
+    header = require('gulp-header'),
+    bump = require('gulp-bump'),
     jshint = require('gulp-jshint');
 
 var pkg = require('./package.json');
@@ -62,8 +63,30 @@ gulp.task('semantic-ui', function(){
         .pipe(gulp.dest('./dist'));
 });
 
+gulp.task("bump-major", function (){
+    gulp.src(["./bower.json", "./package.json"])
+        .pipe(bump({ type: "major" }))
+        .pipe(gulp.dest("./"));
+});
+
+gulp.task("bump-minor", function (){
+    gulp.src(["./bower.json", "./package.json"])
+        .pipe(bump({ type: "minor" }))
+        .pipe(gulp.dest("./"));
+});
+
+gulp.task("bump-patch", function (){
+    gulp.src(["./bower.json", "./package.json"])
+        .pipe(bump({ type: "patch" }))
+        .pipe(gulp.dest("./"));
+});
+
 gulp.task('watch', function() {
     gulp.watch('./src/*.js', ['lint', 'master']);
 });
+
+gulp.task('build-patch', ['master', 'validation-plugin', 'semantic-ui', 'bump-patch']);
+gulp.task('build-minor', ['master', 'validation-plugin', 'semantic-ui', 'bump-minor']);
+gulp.task('build-major', ['master', 'validation-plugin', 'semantic-ui', 'bump-major']);
 
 gulp.task('default', ['lint', 'master', 'validation-plugin', 'semantic-ui', 'watch']);
