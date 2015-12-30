@@ -75,6 +75,11 @@
                 var ruleName = getRuleName(ruleData);
                 var ruleParameter = getRuleParameter(ruleData);
 
+                //If the element is a select or checkbox and the rule is required skip the rule
+                //Since bools are non-nullable the required rule gets added but isn't valid
+                if (ruleName === "required" && (element.is(':checkbox') || element.is('select')))
+                    return;
+
                 //If we don't already have a rule object create it
                 if (!elementConfig[ruleName]) {
                     elementConfig[ruleName] = {

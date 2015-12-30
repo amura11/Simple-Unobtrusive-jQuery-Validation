@@ -1,6 +1,6 @@
 /**
  * jquery.unobtrusive-validation - A plugin to connect validation plugins with ASP.NET's unobtrusive validation attributes 
- * @version v0.2.1
+ * @version v0.3.1
  * @link https://github.com/amura11/jQuery.unobtrusive-validation#readme
  * @license MIT
  */
@@ -80,6 +80,11 @@
                 //Get the rule name and the paramter (if this is a parameter attribute)
                 var ruleName = getRuleName(ruleData);
                 var ruleParameter = getRuleParameter(ruleData);
+
+                //If the element is a select or checkbox and the rule is required skip the rule
+                //Since bools are non-nullable the required rule gets added but isn't valid
+                if (ruleName === "required" && (element.is(':checkbox') || element.is('select')))
+                    return;
 
                 //If we don't already have a rule object create it
                 if (!elementConfig[ruleName]) {

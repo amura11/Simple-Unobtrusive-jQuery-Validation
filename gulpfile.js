@@ -85,8 +85,6 @@ gulp.task('watch', function() {
     gulp.watch('./src/*.js', ['lint', 'master']);
 });
 
-gulp.task('build-patch', ['bump-patch', 'master', 'validation-plugin', 'semantic-ui']);
-gulp.task('build-minor', ['bump-minor', 'master', 'validation-plugin', 'semantic-ui']);
-gulp.task('build-major', ['bump-major', 'master', 'validation-plugin', 'semantic-ui']);
+gulp.task('build', ['lint', 'master', 'validation-plugin', 'semantic-ui']);
 
 gulp.task('default', ['lint', 'master', 'validation-plugin', 'semantic-ui', 'watch']);
