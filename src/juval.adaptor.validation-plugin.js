@@ -46,7 +46,10 @@
                 var mapper = _mappers[ruleName] || passthroughMapper.bind(this, ruleName);
 
                 //Call the mapper function
-                mapper(fieldConfiguration[ruleName], pluginConfiguration.rules[fieldName], pluginConfiguration.messages[fieldName]);
+                mapper($.extend({}, {
+                    fieldName: fieldName,
+                    form: form
+                }, fieldConfiguration[ruleName]), pluginConfiguration.rules[fieldName], pluginConfiguration.messages[fieldName]);
             }
         }
 
@@ -116,6 +119,24 @@
         messages[ruleName] = configuration.message;
     }
 
+    function getModelName(fieldName) {
+        return fieldName.substr(0, fieldName.lastIndexOf(".") + 1);
+    }
+
+    function setModelName(fieldName, modelName) {
+        var updatedFieldName = fieldName.substr(fieldName.lastIndexOf(".") + 1);
+
+        if (modelName.length > 0){
+            updatedFieldName = modelName + "." + updatedFieldName;
+        }
+
+        return updatedFieldName;
+    }
+
+    function escapeAttributeValue(value) {
+        return value.replace(/([!"#$%&'()*+,./:;<=>?@\[\\\]^`{|}~])/g, "\\$1");
+    }
+
     /**
      * The set of mappers that are available by default in ASP.NET MVC
      * Each mapper takes the rule configuration, and a reference to the current fields rules and messages
@@ -130,7 +151,6 @@
         required: booleanMapper.bind(this, 'required'),
         url: booleanMapper.bind(this, 'url'),
         //Single value mappers with the name added
-        equalto: singleValueMapper.bind(this, 'equalTo'),
         length: singleValueMapper.bind(this, 'maxlength'),
         maxlength: singleValueMapper.bind(this, 'maxlength'),
         minlength: singleValueMapper.bind(this, 'minlength'),
@@ -148,6 +168,14 @@
             messages.min = configuration.message;
             messages.max = configuration.message;
         },
+        equalto: function(configuration, rules, messages) {
+            //Build the full property name of the other field
+            var modelName = getModelName(configuration.fieldName);
+            var otherFieldName = setModelName(configuration.parameters.other, modelName);
+
+            rules.equalTo = $(':input[name='+ escapeAttributeValue(otherFieldName) +']', configuration.form)[0];
+            messages.equalTo = configuration.message;
+        }
     };
 
     //Setup the adaptor
