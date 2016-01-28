@@ -180,4 +180,4 @@
 
     //Setup the adaptor
     init();
-}(UnobtrusiveValidation.getAdaptorNamespace('jQueryValidationPlugin'), jQuery));
+}(Validation.getAdaptorNamespace('jQueryValidationPlugin'), jQuery));

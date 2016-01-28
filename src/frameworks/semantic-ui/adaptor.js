@@ -124,4 +124,4 @@
 
     //Setup the adaptor
     init();
-}(UnobtrusiveValidation.getAdaptorNamespace('SemanticUi'), jQuery));
+}(Validation.getAdaptorNamespace('SemanticUi'), jQuery));

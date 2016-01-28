@@ -4,7 +4,8 @@ var gulp = require('gulp'),
     concat = require('gulp-concat'),
     header = require('gulp-header'),
     bump = require('gulp-bump'),
-    jshint = require('gulp-jshint');
+    jshint = require('gulp-jshint'),
+    runSequence = require('run-sequence');
 
 var pkg = require('./package.json');
 var banner = ['/**',
@@ -17,17 +18,17 @@ var banner = ['/**',
 
 // Lint Task
 gulp.task('lint', function() {
-    return gulp.src('./src/*.js')
+    return gulp.src('./src/**/*.js')
         .pipe(jshint())
         .pipe(jshint.reporter('default'));
 });
 
 gulp.task('master', function(){
-    gulp.src(['./src/juval.core.js', './src/juval.adaptor.*.js'])
-        .pipe(concat('jquery.uval.js'))
+    return gulp.src(['./src/core.js', './src/frameworks/**/adaptor.js'])
+        .pipe(concat('jquery.sujv.js'))
         .pipe(header(banner, { pkg : pkg } ))
         .pipe(gulp.dest('./dist'))
-        .pipe(rename('jquery.uval.min.js'))
+        .pipe(rename('jquery.sujv.min.js'))
         .pipe(uglify())
         .pipe(gulp.dest('./dist'));
 });
@@ -35,48 +36,48 @@ gulp.task('master', function(){
 /*
  * Builds a version of the juval library specifically for jQuery Validation Plugin
  */
-gulp.task('validation-plugin', function(){
-    gulp.src([
-        './src/juval.core.js',
-        './src/juval.adaptor.validation-plugin.js',
-        './src/juval.setter.validation-plugin.js'
+gulp.task('jquery-validation', function(){
+    return gulp.src([
+        './src/core.js',
+        './src/frameworks/jquery-validation/adaptor.js',
+        './src/frameworks/jquery-validation/setter.js'
         ])
-        .pipe(concat('jquery.uval.validation-plugin.js'))
+        .pipe(concat('jquery.sujv.jquery-validation.js'))
         .pipe(header(banner, { pkg : pkg } ))
         .pipe(gulp.dest('./dist'))
-        .pipe(rename('jquery.uval.validation-plugin.min.js'))
+        .pipe(rename('jquery.sujv.jquery-validation.min.js'))
         .pipe(uglify())
         .pipe(gulp.dest('./dist'));
 });
 
 gulp.task('semantic-ui', function(){
-    gulp.src([
-        './src/juval.core.js',
-        './src/juval.adaptor.semantic-ui.js',
-        './src/juval.setter.semantic-ui.js'
+    return gulp.src([
+        './src/core.js',
+        './src/frameworks/semantic-ui/adaptor.js',
+        './src/frameworks/semantic-ui/setter.js'
         ])
-        .pipe(concat('jquery.uval.semantic-ui.js'))
+        .pipe(concat('jquery.sujv.semantic-ui.js'))
         .pipe(header(banner, { pkg : pkg } ))
         .pipe(gulp.dest('./dist'))
-        .pipe(rename('jquery.uval.semantic-ui.min.js'))
+        .pipe(rename('jquery.sujv.semantic-ui.min.js'))
         .pipe(uglify())
         .pipe(gulp.dest('./dist'));
 });
 
 gulp.task("bump-major", function (){
-    gulp.src(["./bower.json", "./package.json"])
+    return gulp.src(["./bower.json", "./package.json"])
         .pipe(bump({ type: "major" }))
         .pipe(gulp.dest("./"));
 });
 
 gulp.task("bump-minor", function (){
-    gulp.src(["./bower.json", "./package.json"])
+    return gulp.src(["./bower.json", "./package.json"])
         .pipe(bump({ type: "minor" }))
         .pipe(gulp.dest("./"));
 });
 
 gulp.task("bump-patch", function (){
-    gulp.src(["./bower.json", "./package.json"])
+    return gulp.src(["./bower.json", "./package.json"])
         .pipe(bump({ type: "patch" }))
         .pipe(gulp.dest("./"));
 });
@@ -85,6 +86,6 @@ gulp.task('watch', function() {
     gulp.watch('./src/*.js', ['lint', 'master']);
 });
 
-gulp.task('build', ['lint', 'master', 'validation-plugin', 'semantic-ui']);
+gulp.task('build', ['lint', 'master', 'jquery-validation', 'semantic-ui']);
 
-gulp.task('default', ['lint', 'master', 'validation-plugin', 'semantic-ui', 'watch']);
+gulp.task('default', ['lint', 'master', 'jquery-validation', 'semantic-ui', 'watch']);

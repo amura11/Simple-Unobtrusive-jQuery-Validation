@@ -1,15 +1,15 @@
 /**
  * jquery.unobtrusive-validation - A plugin to connect validation plugins with ASP.NET's unobtrusive validation attributes 
- * @version v0.3.2
+ * @version v0.4.0
  * @link https://github.com/amura11/jQuery.unobtrusive-validation#readme
  * @license MIT
  */
-(function(UnobtrusiveValidation, $, undefined) {
+(function(Validation, $, undefined) {
     $(function() {
-        UnobtrusiveValidation.setup();
+        Validation.setup();
     });
 
-    UnobtrusiveValidation.setAdaptor = function(adaptorName) {
+    Validation.setAdaptor = function(adaptorName) {
         _selectedAdaptor = adaptorName;
     };
 
@@ -17,16 +17,16 @@
      * Returns a namespace for the given adaptor
      * If the namespace doens't exist it gets created.
      * @param  {String} adaptorName The adaptor name to create a namespace for
-     * @return {Object}             A namespace within UnobtrusiveValidation.Adaptors for the given adaptor name
+     * @return {Object}             A namespace within Validation.Adaptors for the given adaptor name
      */
-    UnobtrusiveValidation.getAdaptorNamespace = function(adaptorName) {
-        UnobtrusiveValidation.Adaptors[adaptorName] = UnobtrusiveValidation.Adaptors[adaptorName] || {};
+    Validation.getAdaptorNamespace = function(adaptorName) {
+        Validation.Adaptors[adaptorName] = Validation.Adaptors[adaptorName] || {};
 
-        return UnobtrusiveValidation.Adaptors[adaptorName];
+        return Validation.Adaptors[adaptorName];
     };
 
-    UnobtrusiveValidation.setup = function(container) {
-        var adaptor = UnobtrusiveValidation.Adaptors[_selectedAdaptor] || _emptyAdaptor;
+    Validation.setup = function(container) {
+        var adaptor = Validation.Adaptors[_selectedAdaptor] || _emptyAdaptor;
         container = $(container || 'body');
 
         //If the container is a form run only on that form, else run on all child forms
@@ -157,8 +157,8 @@
     var _selectedAdaptor;
     var _ruleAttributeRegex = new RegExp(/^(data-val-)([\-a-zA-Z0-9]+)$/);
     //Ensure the adaptors namespace is setup
-    UnobtrusiveValidation.Adaptors = UnobtrusiveValidation.Adaptors || {};
-}(window.UnobtrusiveValidation = window.UnobtrusiveValidation || {}, jQuery));
+    Validation.Adaptors = Validation.Adaptors || {};
+}(window.Validation = window.Validation || {}, jQuery));
 
 (function(SemanticUi, $, undefined) {
     function init() {}
@@ -286,11 +286,11 @@
 
     //Setup the adaptor
     init();
-}(UnobtrusiveValidation.getAdaptorNamespace('SemanticUi'), jQuery));
+}(Validation.getAdaptorNamespace('SemanticUi'), jQuery));
 
 /*
  * Initializes the juval plugin to use the SemanticUi Plugin
  */
-if (UnobtrusiveValidation) {
-    UnobtrusiveValidation.setAdaptor('SemanticUi');
+if (Validation) {
+    Validation.setAdaptor('SemanticUi');
 }
